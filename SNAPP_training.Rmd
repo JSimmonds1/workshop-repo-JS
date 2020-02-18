@@ -1,0 +1,29 @@
+---
+title: "Jeremy practice"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Header 1
+
+Introductory text about what Im doing **Bold text here**
+
+* Point 1
+* Point 2
+
+$\sum{x^2}$
+
+```{r RC_1}
+# comment
+x <- c(1, 13, -5)
+x
+
+```
+
+```{r}
+bg_chem <- read.csv(file = "Data/BGchem2008data.csv")
+
+```
