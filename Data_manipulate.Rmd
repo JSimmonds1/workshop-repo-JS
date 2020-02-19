@@ -70,4 +70,17 @@ catch_wide <- catch_long %>%
 head(catch_wide)
 ```
 
+## Group_by and summarise
+
+```{r}
+mean_region <- catch_long %>%
+  group_by(Region, species) %>% 
+  summarise(catch_mean = mean(catch),
+            num_obs = n())
+
+head(mean_region)
+```
+
+
+
 # Join to regions table
