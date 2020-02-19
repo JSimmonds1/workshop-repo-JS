@@ -81,6 +81,49 @@ mean_region <- catch_long %>%
 head(mean_region)
 ```
 
+## In what year was total salmon catch the highest
+
+```{r}
+head(catch_long)
+
+annual_catch <- catch_long %>%
+  group_by(Year) %>% 
+  summarise(total_catch = sum(catch)) %>% 
+  arrange(-total_catch)
+
+
+annual_catch
+
+  #summarise(sum_year = max(catch))
+```
+
+```{r}
+annual_sockeye <- catch_long %>% 
+  filter(species == "Sockeye") %>%
+  group_by(Year) %>% 
+  summarise(total_catch = sum(catch)) %>% 
+  arrange(-total_catch)
+
+annual_sockeye
+  
+```
 
 
 # Join to regions table
+
+Read in regions data
+```{r}
+region_defs <- (read.csv("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.303.1", stringsAsFactors = F)) %>% 
+  select(code, mgmtArea)
+
+head(region_defs)
+```
+
+
+```{r}
+catch_joined <- left_join(catch_long, region_defs, by = c("Region" = "code"))
+
+head(catch_joined)
+```
+
+
