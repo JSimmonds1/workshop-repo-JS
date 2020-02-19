@@ -1,0 +1,73 @@
+---
+title: "Data_cleaning_JS"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Select packages
+
+```{r}
+library(dplyr)
+library(tidyr)
+```
+
+# Read in data
+[We are using data from Mike Byerly. Alaska commercial salmon catches by management region (1886- 1997). Gulf of Alaska Data Portal. df35b.304.2.](https://knb.ecoinformatics.org/view/df35b.304.2)
+
+```{r}
+catch_original <- read.csv(url("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.302.1", method = "libcurl"), stringsAsFactors = F)
+
+head(catch_original)
+```
+
+# Clean and reshape
+Remove marginal sum and notes column using `select()`
+
+```{r}
+catch_clean <- catch_original %>% 
+  select(Region, Year, Chinook, Sockeye, Coho, Pink, Chum) %>% 
+  mutate(Chinook = ifelse(Chinook == "I", 1, Chinook)) %>% 
+  mutate(Chinook = as.numeric(Chinook))
+
+head(catch_clean)
+summary(catch_clean)
+```
+
+## Quality assurance - Chinook column
+Find where as.numeric couldn't convert Chinook to a number
+
+```{r}
+i <- which(is.na(catch_clean$Chinook))
+i
+
+catch_original[i, ]
+```
+
+Reshape from wider to tall format using `pivot_longer`
+
+```{r}
+catch_long <- catch_clean %>% 
+  pivot_longer(cols = -c(Region, Year),
+               names_to = "species",
+               values_to = "catch") %>% 
+  rename(catch_thousands = catch) %>% 
+  mutate(catch = catch_thousands*1000) %>% 
+  select(-catch_thousands)
+
+head(catch_long)
+```
+
+Example with pivot_wider
+
+```{r}
+catch_wide <- catch_long %>% 
+  pivot_wider(names_from = Year,
+              values_from = catch)
+
+head(catch_wide)
+```
+
+# Join to regions table
