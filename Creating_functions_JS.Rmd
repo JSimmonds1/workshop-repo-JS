@@ -11,18 +11,22 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 PCT <-function(n,p){
+  #n is a nubmer; p is a percentage (not a proportion 0-1!)
   n*p/100
 }
 ```
 
-#Per 1000
+#Per 1000 (include save function in R script, then read in using source - this is tidier than writing function in R Markdown)
 ```{r}
-PerMill <-function(n,p,m){
-  n*p/m
-}
+#PerMill <-function(n,p,m){
+  ##n is a nubmer; p is a percentage (not a proportion 0-1!), m is the dominator (ratio) you want to determine (n*p:m)
+  #n*p/m
+#}
 
-PerMill(100,20,10)
-PerMill(100,20,100)
-PerMill(100,20,1000)
+source("my_functions.R")
+
+PerMill(100,1,100)
+PerMill(100,10,100)
+PerMill(100,100,100)
 ```
 
