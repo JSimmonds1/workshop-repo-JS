@@ -1,0 +1,28 @@
+---
+title: "Create_function"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Write a function that computes the percentage of a number n*p/100
+
+```{r}
+PCT <-function(n,p){
+  n*p/100
+}
+```
+
+#Per 1000
+```{r}
+PerMill <-function(n,p,m){
+  n*p/m
+}
+
+PerMill(100,20,10)
+PerMill(100,20,100)
+PerMill(100,20,1000)
+```
+
