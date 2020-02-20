@@ -50,4 +50,14 @@ head(annual_esc)
 ```
 
 
-#
+#Data visualisation - first look at the data
+```{r}
+ggplot(annual_esc, aes(x = Species, y = escapement)) +
+  geom_col()
+```
+
+#Changing colour of bars
+```{r}
+ggplot(annual_esc, aes(x = Species, y = escapement)) +
+  geom_col(fill = "blue")
+```
