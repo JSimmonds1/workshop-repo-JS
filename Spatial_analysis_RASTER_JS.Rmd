@@ -104,3 +104,62 @@ ggplot() +
     theme(legend.position = "bottom", legend.title = element_blank())
 ```
 
+
+#Cropping the Copper River (equivalent of EXTRACT BY MASK)
+```{r}
+copper_region_3338 <- ak_regions_3338 %>%
+  filter(region =="Copper River")
+```
+
+```{r}
+copper_lc_3338 <- crop(lc_3338, copper_region_3338)
+plot(copper_lc_3338)
+```
+
+
+#Create a mask for forest land cover type - need to create a function
+```{r}
+forest_mask <-function(x){
+  x[x<40 | x>49] <- 0
+  x[x>=40 & x<=49] <- 1
+  x
+}
+```
+
+
+# Calculate new pixel values (e.g. )
+```{r}
+copper_forested_3338 <- calc(copper_lc_3338, forest_mask)
+plot(copper_forested_3338)
+```
+
+
+#Calculate amount of forest around urban centres in Copper River
+```{r}
+copper_pop_3338 <- pop_3338_cover %>% 
+  filter(region == "Copper River")
+
+plot(copper_pop_3338)
+```
+
+```{r}
+forested_count <- extract(copper_forested_3338, copper_pop_3338, buffer=500, fun=sum)
+```
+
+```{r}
+copper_pop_3338$forest_cov <- 100*forested_count / (20*20)
+head(copper_pop_3338)
+```
+
+```{r}
+ggplot() +
+    geom_sf(data = copper_region_3338, aes(), color = "black") +
+    geom_sf(data = copper_pop_3338, aes(color = forest_cov,
+                                       size = population)) +
+    scale_size_continuous(guide = F) +
+    scale_colour_gradientn(colours = terrain.colors(10, rev=TRUE)) +
+    theme_bw() +
+    theme(legend.position = "bottom") +
+    labs(color = "Percent Forest Cover")
+```
+
