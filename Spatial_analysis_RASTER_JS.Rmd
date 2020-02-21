@@ -1,0 +1,106 @@
+---
+title: "Spatial_analysis_RASTER_JS"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+#Read in landcover raster 
+```{r}
+library(raster)
+
+lc_3338 <- raster("/home/shares/scientist/ds-workshop/ak_nlcd_2011_landcover_50m_3338.tif")
+```
+
+```{r}
+plot(lc_3338)
+plot(pop_3338, add=TRUE)
+```
+
+
+#Extracting most frequent land cover
+```{r}
+raster_points <- extract(lc_3338, pop_3338, buffer = 500, fun=modal)
+raster_points
+```
+
+```{r}
+pop_joined$land_cover <- raster_points
+pop_joined
+```
+
+
+# Aggregate LC categories (load legend, aggregate attributes etc.)
+```{r}
+# Read the land cover legend
+Legend_lc <- read.csv("/home/shares/scientist/ds-workshop/legend_ak_nlcd_2011.csv", stringsAsFactors = FALSE)
+Legend_lc
+```
+
+```{r}
+# It is a lot of categories, let us consolidate this
+Legend_lc <- Legend_lc %>%
+  mutate(main_lc = ifelse(ID %in% 40:49, "Forest",
+                              ifelse(ID %in% 20:29, "Urban",
+                                     ifelse(ID %in% 50:59, "Shrub",
+                                             ifelse(ID %in% 70:79, "Grass",
+                                                     ifelse(ID %in% 80:89, "Crops",
+                                                             ifelse(ID %in% 90:99, "Wetland", Land.Cover.Type)
+                                                             )
+                                                     )
+                                             )
+                                     )
+                              )
+  )
+
+
+# Join the LC categories to the population data
+pop_3338_cover <- left_join(pop_joined, Legend_lc, by=c("land_cover"="ID")) %>% 
+  dplyr::select(-Red, -Green, -Blue, -Land.Cover.Type)
+
+pop_3338_cover
+```
+
+
+#Plot lc
+```{r}
+# Create color palette by keeping last color of each group
+pal <- Legend_lc %>% 
+  group_by(main_lc) %>% 
+  slice(n()) %>% # Keeping the last color of the groups
+  ungroup %>% 
+  arrange(ID) %>%
+  mutate(color_hex = rgb(Red, Green, Blue, max = 255)) %>% 
+  dplyr::select(main_lc, color_hex)
+
+# turn pallete into a list for plotting
+pal_list <- pal$color_hex
+names(pal_list) <- pal$main_lc
+
+
+# Plot by region
+ggplot(pop_3338_cover, aes(region, population, fill = main_lc)) +
+    geom_col() +
+    scale_y_continuous(labels = comma) +
+    scale_fill_manual(values = pal_list) +
+    theme_bw() +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+    ggtitle("Land cover type by region and population") +
+    labs(fill = "", y = "Population", x = "")
+```
+
+#Map - colour by lc, dot size by pop
+```{r}
+ggplot() +
+    geom_sf(data = ak_regions_3338, aes(), color = "black") +
+    geom_sf(data = pop_3338_cover, aes(color = main_lc,
+                                       size = population), show.legend = "point") +
+    scale_size_continuous(guide = F) +
+    scale_color_manual(values = pal_list) +
+    theme_bw() +
+    theme(legend.position = "bottom", legend.title = element_blank())
+```
+
